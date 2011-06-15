@@ -4,8 +4,11 @@
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 
-// local function
-// replace all occurance of <repl> in <input> with <replValue>
+///////////////////////// LOCAL FUNCTIONS //////////////////////////////////////////
+
+/******************************************************************************\
+|                                                                              |
+\******************************************************************************/
 void FindReplace( const std::string& input, const std::string& place_holder,
   const std::string& replace_value, std::string& output )
 {
@@ -22,6 +25,8 @@ void FindReplace( const std::string& input, const std::string& place_holder,
     index = output.find(place_holder);
   }
 }
+
+//////////////////////// GLOBAL FUNCTIONS //////////////////////////////////////
 
 void LoadSettings(int argc, char *argv[],
   Settings& settings)
@@ -156,5 +161,16 @@ void LoadSettings(int argc, char *argv[],
   settings.true_roi_path       = fs::path(true_roi_path);
   settings.output_results_path = fs::path(output_results_path);
   settings.draw_results_folder = fs::path(draw_results_folder);
+}
+
+void OutputSettings( const Settings& settings, std::ostream& out )
+{
+  out << "# Program Options"      << std::endl
+      << "computed_roi_path   = " << settings.computed_roi_path   << std::endl
+      << "true_roi_path       = " << settings.true_roi_path       << std::endl
+      << "output_results_path = " << settings.output_results_path << std::endl
+      << "draw_results_folder = " << settings.draw_results_folder << std::endl
+      << "draw_results        = " << settings.draw_results        << std::endl
+  ;
 }
 

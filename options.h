@@ -31,5 +31,14 @@ void LoadSettings(
   Settings&  settings
 );
 
+/**OutputSettings**************************************************************\
+|   Description: Write the settings values to some output stream.
+|   Input:                                                                     |
+|     settings: program settings                                               |
+|   Output:                                                                    |
+|     out: Output stream to write settings to (ex. std::cout)                  |
+\******************************************************************************/
+void OutputSettings( const Settings& settings, std::ostream& out );
+
 #endif // FILE_SETTINGS_PROGRAM_OPTIONS
 

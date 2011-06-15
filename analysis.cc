@@ -28,11 +28,8 @@ int main(int argc, char *argv[])
     true_roi_list
   );
 
-  std::cout << program_settings.computed_roi_path.native()   << std::endl
-            << program_settings.true_roi_path.native()       << std::endl
-            << program_settings.output_results_path.native() << std::endl
-            << program_settings.draw_results_folder.native() << std::endl
-            << program_settings.draw_results                 << std::endl;
+  // print settings
+  OutputSettings(program_settings, std::cout);
 
   return 0;
 }
