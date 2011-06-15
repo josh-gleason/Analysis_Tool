@@ -11,12 +11,15 @@ libs = -lboost_system -lboost_program_options `pkg-config opencv --libs`
 object_files = \
 	clipper.o \
 	analysis_tools.o \
-	options.o
+	options.o \
+	io.o 
 
 header_files = \
 	clipper.h \
 	analysis_tools.h \
-	options.h
+	options.h \
+	io.h \
+	image_region_list.h
 
 exec_files = \
 	analysis

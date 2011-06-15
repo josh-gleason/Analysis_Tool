@@ -1,6 +1,6 @@
 #include "analysis_tools.h"
 
-namespace at
+namespace analysis_tools
 {
 
 void cvt(const Point& p1, clipper::IntPoint& p2)

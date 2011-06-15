@@ -16,7 +16,7 @@
 
 using namespace std;
 
-namespace at
+namespace analysis_tools
 {
   struct Point
   {
