@@ -1,8 +1,10 @@
 #include "options.h"
 
-// namespace alias
+// namespace aliasing
 namespace po = boost::program_options;
+namespace fs = boost::filesystem;
 
+// local function
 // replace all occurance of <repl> in <input> with <replValue>
 void FindReplace( const std::string& input, const std::string& place_holder,
   const std::string& replace_value, std::string& output )
@@ -21,12 +23,21 @@ void FindReplace( const std::string& input, const std::string& place_holder,
   }
 }
 
-void LoadSettings(const std::string& config_filename, int argc, char *argv[],
+void LoadSettings(int argc, char *argv[],
   Settings& settings)
 {
   // The replace string is the string that will replace any occurance
   // of %s in any of the filenames
   std::string replace_string;
+
+  // strings to be processed before conversion to fs::path in settings
+  std::string computed_roi_path;
+  std::string true_roi_path;
+  std::string output_results_path;
+  std::string draw_results_folder;
+  
+  // path to the settings file (obtained from command line)
+  std::string config_path;
 
   // Declare options description class
   po::options_description description("Allowed options");
@@ -46,6 +57,9 @@ void LoadSettings(const std::string& config_filename, int argc, char *argv[],
     ("input_value,i", po::value<std::string>
         (&replace_string)->default_value("file"),
         "The value that replaces any occurance of \%s in any filename")
+    ("config_file_path,c", po::value<std::string>
+        (&config_path)->default_value("config.cfg"),
+        "The configuration file name")
     ;
 
   // config file or command line options
@@ -54,19 +68,19 @@ void LoadSettings(const std::string& config_filename, int argc, char *argv[],
   config_options.add_options()
     
     // input files
-    ("computed_roi_filename", po::value<std::string>
-        (&settings.computed_roi_filename),
+    ("computed_roi_path", po::value<std::string>
+        (&computed_roi_path),
         "Filename for the computed Regions of interest")
-    ("true_roi_filename", po::value<std::string>
-        (&settings.true_roi_filename),
+    ("true_roi_path", po::value<std::string>
+        (&true_roi_path),
         "Filename containing ground truth")
     
     // output files
-    ("output_results_filename", po::value<std::string>
-        (&settings.output_results_filename),
+    ("output_results_path", po::value<std::string>
+        (&output_results_path),
         "Results output file")
     ("draw_results_folder", po::value<std::string>
-        (&settings.draw_results_folder),
+        (&draw_results_folder),
         "File location to draw results")
     
     // flags
@@ -98,10 +112,10 @@ void LoadSettings(const std::string& config_filename, int argc, char *argv[],
   /****************************************************************************\
   |                       READ IN CONFIG FILE OPTIONS                          |
   \****************************************************************************/
-  std::ifstream fin(config_filename.c_str());
+  std::ifstream fin(config_path.c_str());
   if ( !fin )
   {
-    std::cout << "Error: Could not open config file \"" << config_filename 
+    std::cout << "Error: Could not open config file \"" << config_path
               << '\"' << std::endl;
     exit(0);
   }
@@ -117,24 +131,30 @@ void LoadSettings(const std::string& config_filename, int argc, char *argv[],
   \****************************************************************************/
 
   // textural replacement of %s in all file path strings
-  FindReplace(settings.computed_roi_filename,
+  FindReplace(computed_roi_path,
               "%s",
               replace_string,
-              settings.computed_roi_filename);
+              computed_roi_path);
   
-  FindReplace(settings.true_roi_filename,
+  FindReplace(true_roi_path,
               "%s",
               replace_string,
-              settings.true_roi_filename);
+              true_roi_path);
   
-  FindReplace(settings.output_results_filename,
+  FindReplace(output_results_path,
               "%s",
               replace_string,
-              settings.output_results_filename);
+              output_results_path);
   
-  FindReplace(settings.draw_results_folder,
+  FindReplace(draw_results_folder,
               "%s",
               replace_string,
-              settings.draw_results_folder);
+              draw_results_folder);
+
+  // assign settings fs::path objects using string path values
+  settings.computed_roi_path   = fs::path(computed_roi_path);
+  settings.true_roi_path       = fs::path(true_roi_path);
+  settings.output_results_path = fs::path(output_results_path);
+  settings.draw_results_folder = fs::path(draw_results_folder);
 }
 

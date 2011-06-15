@@ -10,26 +10,26 @@
 /**LoadComputedROI*************************************************************\
 |   Description: Load the computed regions of interest(ROIs) in a file         |
 |   Input:                                                                     |
-|     filename: The filename of the file containined the computed ROIs         |
+|     filename: Path to the file containined the computed ROIs                 |
 |   Output:                                                                    |
-|     computed_regions: list of computed regions                               |
+|     computed_regions: List of computed regions                               |
 \******************************************************************************/
 bool LoadComputedROI( 
-  const std::string&             filename,
-  std::vector<ImageRegionList>&  computed_regions 
+  const boost::filesystem::path&  filename,
+  std::vector<ImageRegionList>&   computed_regions 
 );
 
 /**LoadTrueROI*****************************************************************\
 |   Description: Load the file contiaining the ground truth regions of         |
 |                interest(ROIs)                                                |
 |   Input:                                                                     |
-|     filename: The filename of the file containined the computed ROIs         |
+|     filename: Path to the file containined the computed ROIs                 |
 |   Output:                                                                    |
-|     true_regions: list of true regions                                       |
+|     true_regions: List of true regions                                       |
 \******************************************************************************/
 bool LoadTrueROI(
-  const std::string&             filename,
-  std::vector<ImageRegionList>&  true_regions
+  const boost::filesystem::path&  filename,
+  std::vector<ImageRegionList>&   true_regions
 );
 
 #endif // ANALYSIS_IO

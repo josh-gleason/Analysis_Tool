@@ -1,13 +1,15 @@
 
 #include "io.h"
 
-bool LoadComputedROI( const std::string& filename,
+namespace fs = boost::filesystem;
+
+bool LoadComputedROI( const fs::path& filename,
   std::vector<ImageRegionList>&  computed_regions )
 {
   return false; // stub
 }
 
-bool LoadTrueROI( const std::string& filename,
+bool LoadTrueROI( const fs::path& filename,
   std::vector<ImageRegionList>& true_regions )
 {
   return false; // stub

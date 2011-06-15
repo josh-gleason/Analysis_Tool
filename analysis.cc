@@ -5,10 +5,7 @@
 #include "image_region_list.h"
 #include "io.h"
 
-#define CONFIG_FILE "settings.cfg"
-
-// TODO : Obviously a lot, need to add boost filesystem to enable generic
-//        file handling, then clone Ara's analysis tool
+namespace fs = boost::filesystem;
 
 int main(int argc, char *argv[])
 {
@@ -19,26 +16,24 @@ int main(int argc, char *argv[])
   std::vector<ImageRegionList> true_roi_list;
 
   // initialization
-  LoadSettings(CONFIG_FILE, argc, argv, program_settings);
+  LoadSettings(argc, argv, program_settings);
 
   LoadComputedROI(
-    program_settings.computed_roi_filename,
+    program_settings.computed_roi_path,
     computed_roi_list
   );
   
   LoadTrueROI(
-    program_settings.true_roi_filename,
+    program_settings.true_roi_path,
     true_roi_list
   );
 
-  //std::cout << program_settings.computed_roi_filename << std::endl
-  //          << program_settings.true_roi_filename << std::endl
-  //          << program_settings.output_results_filename << std::endl
-  //          << program_settings.draw_results_folder << std::endl
-  //          << program_settings.draw_results << std::endl;
+  std::cout << program_settings.computed_roi_path.native()   << std::endl
+            << program_settings.true_roi_path.native()       << std::endl
+            << program_settings.output_results_path.native() << std::endl
+            << program_settings.draw_results_folder.native() << std::endl
+            << program_settings.draw_results                 << std::endl;
 
   return 0;
 }
-
-
 
