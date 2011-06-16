@@ -13,6 +13,7 @@ struct ImageRegionList
   // list of regions with corresponding labels
   std::vector<cv::Rect>     regions;
   std::vector<cv::string>   labels;
+  std::vector<float>        scores;
 };
 
 #endif // ANALYSIS_IMAGE_REGION_LIST
