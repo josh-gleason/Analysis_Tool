@@ -12,14 +12,16 @@ object_files = \
 	clipper.o \
 	analysis_tools.o \
 	options.o \
-	io.o 
+	io.o \
+	progress_bar.o
 
 header_files = \
 	clipper.h \
 	analysis_tools.h \
 	options.h \
 	io.h \
-	image_region_list.h
+	image_region_list.h \
+	progress_bar.h
 
 exec_files = \
 	analysis
