@@ -53,7 +53,9 @@ void LoadSettings(int argc, char *argv[],
   description.add_options()
     
     // add the default help message
-    ("help", "View help message");
+    ("help", "View this help message")
+    ("help_match_level", "View help for match_threshold setting")
+    ;
 
   // command line only options
   po::options_description command_line_options("Command Line Options");
@@ -88,7 +90,14 @@ void LoadSettings(int argc, char *argv[],
         (&draw_results_folder),
         "File location to draw results")
     
-    // flags
+    // other settings
+    ("match_level,M", po::value<int>
+        (reinterpret_cast<int*>(&settings.match_level))->
+          default_value(static_cast<int>(Settings::NON_EXCLUSIVE)),
+        "Level of matching (--help_match_level for more information)")
+    ("score_1_threshold,t1", po::value<double>
+        (&settings.score_1_threshold)->default_value(0.0),
+        "First score threshold value")
     ("draw_results,D", po::value<bool>
         (&settings.draw_results)->default_value(false),
         "Option to draw results and save images")
@@ -111,6 +120,38 @@ void LoadSettings(int argc, char *argv[],
   if ( vm.count("help") )
   {
     std::cout << description << "\n";
+    exit(0);
+  }
+
+  // output help for match_threshold
+  if ( vm.count("help_match_level") )
+  {
+    std::cout << "\nmatch_level options" << std::endl
+      << "\t1: non-exclusive matching. i.e.,\n"
+      << "\tMore than one computed region can overlap one ground truth and\n"
+      << "\tnone will be counted as a false positive.\n"
+      << "\tAlso if one computed region overlaps two (or more) ground truths,\n"
+      << "\twill count as a match to both ground truths.\n"
+      << std::endl
+      << "\t2: semi-exclusive matching(1). i.e.,\n"
+      << "\tMore than one computed region can overlap one ground truth and\n"
+      << "\tneither will be counted as a false positive.\n"
+      << "\tHowever, if one computed region overlaps two ground truths\n"
+      << "\tonly one ground truth is considered matched/detected.\n"
+      << std::endl
+      << "\t3: semi-exclusive matching(2). i.e.,\n"
+      << "\tIf more than one computed region overlaps one ground truth,\n"
+      << "\tthe lower matching regions will be counted as false positives.\n"
+      << "\tHowever, if one computed region overlaps two ground truths\n"
+      << "\tonly one ground truth is considered matched/detected.\n"
+      << std::endl
+      << "\t4: exclusive matching. i.e., 1-to-1 matching\n"
+      << "\tIf more than one computed region overlaps one ground truth, the\n"
+      << "\tlower scoring computed regions will be counted as false positives.\n"
+      << "\tHowever if one computed region overlaps two (or more) ground\n"
+      << "\ttruths, it will count as a match to both ground truths.\n"
+      << std::endl;
+              
     exit(0);
   }
 
@@ -165,12 +206,22 @@ void LoadSettings(int argc, char *argv[],
 
 void PrintSettings( const Settings& settings, std::ostream& out )
 {
+  // alias to shorten lines
+  typedef Settings s;
+
   out << "# Program Options"      << std::endl
       << "computed_roi_path   = " << settings.computed_roi_path   << std::endl
       << "true_roi_path       = " << settings.true_roi_path       << std::endl
       << "output_results_path = " << settings.output_results_path << std::endl
       << "draw_results_folder = " << settings.draw_results_folder << std::endl
       << "draw_results        = " << settings.draw_results        << std::endl
+      << "score_1_threshold   = " << settings.score_1_threshold   << std::endl
+      << "match_level         = " << static_cast<int>(settings.match_level) <<
+        (settings.match_level == s::NON_EXCLUSIVE    ?"\t\t# NON_EXCLUSIVE"   :
+        (settings.match_level == s::SEMI_EXCLUSIVE_1 ?"\t\t# SEMI_EXCLUSIVE_1":
+        (settings.match_level == s::SEMI_EXCLUSIVE_2 ?"\t\t# SEMI_EXCLUSIVE_2":
+        (settings.match_level == s::EXCLUSIVE        ?"\t\t# EXCLUSIVE "      :
+        "" )))) << std::endl
   ;
 }
 

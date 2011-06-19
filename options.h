@@ -9,11 +9,21 @@
 
 struct Settings
 {
+  typedef enum {
+    NON_EXCLUSIVE    = 1,
+    SEMI_EXCLUSIVE_1 = 2,
+    SEMI_EXCLUSIVE_2 = 3,
+    EXCLUSIVE        = 4
+  } MatchType;
+
   boost::filesystem::path computed_roi_path;
   boost::filesystem::path true_roi_path;
   boost::filesystem::path output_results_path;
   boost::filesystem::path draw_results_folder;
   bool draw_results;
+  double score_1_threshold;
+
+  MatchType match_level;
 };
 
 /**LoadSettings****************************************************************\

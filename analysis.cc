@@ -24,12 +24,14 @@
 namespace fs = boost::filesystem;
 namespace at = analysis_tools;
 
+// TODO add options for polygons, ellipses and circles for label types
 // TODO implement labels (give them a use)
 //   TODO add option to ignore labels
 // TODO draw a line to the nearest match in DrawResults
 // TODO add filtering by score and color score
 //   TODO may want to change name of score as its same as color score
 // TODO output results
+// TODO Implement having a second score value
 
 // simple structure containing an index and a score
 struct IndexScore
@@ -45,6 +47,17 @@ struct IndexScore
 /******************************************************************************\
 |                          FUNCTION PROTOTYPES                                 |
 \******************************************************************************/
+
+/**ComputeScore****************************************************************\
+|   Description: Compute score between true_roi and computed_roi               |
+|    Input:                                                                    |
+|      true_roi/computed_roi: two rectangles to compare                        |
+|    Output: Return the "closeness" score.                                     |
+\******************************************************************************/
+double ComputeScore(
+  const cv::Rect& true_roi,
+  const cv::Rect& computed_roi
+);
 
 /**DetermineMatches************************************************************\
 |   Description: Find the top matching regions for each ROI in true_roi_list   |
@@ -64,27 +77,25 @@ void DetermineMatches(
   std::vector< std::vector< std::vector<IndexScore> > >&  top_matches
 );
 
-/**ComputeScore****************************************************************\
-|   Description: Compute score between true_roi and computed_roi               |
-|    Input:                                                                    |
-|      true_roi/computed_roi: two rectangles to compare                        |
-|    Output: Return the "closeness" score.                                     |
+/**PrintResults****************************************************************\
+|   Description: Determine results from computed list of sorted regions.       |
+|   Input:                                                                     |
+|     true_roi_list: Ground truth data                                         |
+|     computed_roi_list: Computed Regions of interest                          |
+|     top_match: output from DetermineMatches()                                |
+|     program_settings: settings                                               |
+|   Output: Write results to output stream determined by program_settings      |
 \******************************************************************************/
-double ComputeScore(
-  const cv::Rect& true_roi,
-  const cv::Rect& computed_roi
+void PrintResults(
+  const std::vector<ImageRegionList>&                        true_roi_list,
+  const std::vector<ImageRegionList>&                        computed_roi_list,
+  const std::vector<std::vector<std::vector<IndexScore> > >& top_matches,
+  const Settings&                                            program_settings
 );
-
-/**DescendingSort**************************************************************\
-|   Description: used by sort() to sort in descending order                    |
-\******************************************************************************/
-bool DescendingSortFunc(IndexScore lhs, IndexScore rhs)
-{ return lhs.score > rhs.score; }
-
 
 /**DrawResults*****************************************************************\
 |   Description: Draws both true and computed regions to image                 |
-|   Input:                                                   /                  |
+|   Input:                                                                     |
 |     true/computed_roi_list: true and computed regions of interest            |
 |     program_settings: settings                                               |
 |   Output: Writes all the images to a folder.                                 |
@@ -94,6 +105,12 @@ void DrawResults(
   std::vector<ImageRegionList>& computed_roi_list,
   const Settings&               program_settings
 );
+
+/**DescendingSort**************************************************************\
+|   Description: used by sort() to sort in descending order                    |
+\******************************************************************************/
+bool DescendingSortFunc(IndexScore lhs, IndexScore rhs)
+{ return lhs.score > rhs.score; }
 
 /******************************************************************************\
 |                              MAIN FUNCTION                                   |
@@ -127,17 +144,17 @@ int main(int argc, char *argv[])
   |                              RUN PROGRAM                                   |
   \****************************************************************************/
 
-  // build list of top matching regions
+  // build list of top matching computed regions for each roi in ground truth
   DetermineMatches(true_roi_list, computed_roi_list, top_matches);
 
-  // print settings XXX Remove Me
-  PrintSettings(program_settings, std::cout);
-  
-  // output results
-  //PrintResults(true_roi_list, computed_roi_list, top_matches, program_settings);
+  // print results
+  PrintResults(true_roi_list, computed_roi_list, top_matches, program_settings);
 
   // draw results on images and save
   DrawResults(true_roi_list, computed_roi_list, program_settings);
+  
+  // print settings XXX Remove Me
+  PrintSettings(program_settings, std::cout);
 
   return 0;
 }
@@ -237,6 +254,50 @@ void DetermineMatches(const std::vector<ImageRegionList>& true_roi_list,
     }
   }
 
+}
+
+void PrintResults( const std::vector<ImageRegionList>& true_roi_list,
+  const std::vector<ImageRegionList>& computed_roi_list,
+  const std::vector< std::vector< std::vector<IndexScore> > >& top_matches,
+  const Settings& program_settings )
+{
+  // TODO: add return value, struct for holding results
+
+  // calculates:  True detection rate (Detected/total)
+  //              Number of false positives
+  //              XXX(possibly) False positives per image
+
+  // level 1: non-exclusive matching. i.e., 
+  //          More than one computed region can overlap one ground truth and
+  //          none will be counted as a false positive.
+  //          Also if one computed region overlaps two (or more) ground truths,
+  //          will count as a match to both ground truths.
+
+  // level 2: semi-exclusive matching(1). i.e.,
+  //          More than one computed region can overlap one ground truth and
+  //          neither will be counted as a false positive.
+  //          However, if one computed region overlaps two ground truths
+  //          only one ground truth is considered matched/detected.
+  
+  // level 3: semi-exclusive matching(2). i.e.,
+  //          If more than one computed region overlaps one ground truth,
+  //          the lower matching regions will be counted as false positives.
+  //          However, if one computed region overlaps two ground truths
+  //          only one ground truth is considered matched/detected.
+  
+  // level 4: exclusive matching. i.e., 1-to-1 matching
+  //          If more than one computed region overlaps one ground truth, the
+  //          lower scoring computed regions will be counted as false positives.
+  //          However if one computed region overlaps two (or more) ground
+  //          truths, it will count as a match to both ground truths.
+
+
+  // TODO: perhaps this should be sepearated into sub-functions
+  // count false positives
+
+  // calculate truth detection rate
+
+  // print results
 }
 
 double ComputeScore(const cv::Rect& true_roi, const cv::Rect& computed_roi)
