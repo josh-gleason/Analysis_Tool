@@ -84,7 +84,7 @@ bool DescendingSortFunc(IndexScore lhs, IndexScore rhs)
 
 /**DrawResults*****************************************************************\
 |   Description: Draws both true and computed regions to image                 |
-|   Input:                                                                     |
+|   Input:                                                   /                  |
 |     true/computed_roi_list: true and computed regions of interest            |
 |     program_settings: settings                                               |
 |   Output: Writes all the images to a folder.                                 |
@@ -95,6 +95,9 @@ void DrawResults(
   const Settings&               program_settings
 );
 
+/******************************************************************************\
+|                              MAIN FUNCTION                                   |
+\******************************************************************************/
 int main(int argc, char *argv[])
 {
   /****************************************************************************\
@@ -128,8 +131,11 @@ int main(int argc, char *argv[])
   DetermineMatches(true_roi_list, computed_roi_list, top_matches);
 
   // print settings XXX Remove Me
-  OutputSettings(program_settings, std::cout);
+  PrintSettings(program_settings, std::cout);
   
+  // output results
+  //PrintResults(true_roi_list, computed_roi_list, top_matches, program_settings);
+
   // draw results on images and save
   DrawResults(true_roi_list, computed_roi_list, program_settings);
 
@@ -144,7 +150,7 @@ void DetermineMatches(const std::vector<ImageRegionList>& true_roi_list,
   std::vector< std::vector< std::vector<IndexScore> > >& top_matches)
 {
   // iterator typedefs
-  typedef std::vector<ImageRegionList>::const_iterator 
+  typedef std::vector<ImageRegionList>::const_iterator
           ConstRegionIterator;
 
   typedef std::vector< std::vector< std::vector<IndexScore> > >::iterator
@@ -261,7 +267,7 @@ void DrawResults(std::vector<ImageRegionList>& true_roi_list,
     std::cout << "Creating directory" << std::endl;
     if ( !fs::create_directories(program_settings.draw_results_folder) )
     {
-      std::cout << "Could not create folder " 
+      std::cout << "Could not create folder "
                 << program_settings.draw_results_folder
                 << std::endl;
       return;
@@ -269,7 +275,7 @@ void DrawResults(std::vector<ImageRegionList>& true_roi_list,
   }
   
   // iterator typedefs
-  typedef std::vector<ImageRegionList>::const_iterator 
+  typedef std::vector<ImageRegionList>::const_iterator
           ConstRegionIterator;
 
   typedef std::vector<cv::Rect>::const_iterator
@@ -277,7 +283,7 @@ void DrawResults(std::vector<ImageRegionList>& true_roi_list,
 
   ProgressBar progress_bar(
     cout,
-    "Drawing Results ", 
+    "Drawing Results ",
     static_cast<int>(true_roi_list.size()),
     60
   );
@@ -293,7 +299,7 @@ void DrawResults(std::vector<ImageRegionList>& true_roi_list,
   for ( ; true_roi_it != true_roi_list.end();
           ++true_roi_it, ++computed_roi_it )
   {
-    cv::Mat img = cv::imread(true_roi_it->image_path.native());
+    cv::Mat img = cv::imread(true_roi_it->image_path.file_string());
     
     ConstRectIterator true_regions_it = true_roi_it->regions.begin();
     ConstRectIterator true_regions_end = true_roi_it->regions.end();
@@ -313,14 +319,14 @@ void DrawResults(std::vector<ImageRegionList>& true_roi_list,
                     cv::Scalar(0,0,255),
                     2,
                     8,
-                    0); 
+                    0);
   
     // build image path as ...
     // DRAW_RESULTS_FOLDER/ORIGINAL_BASENAME_analysis.ORIGINAL_EXTENSION
-    std::string image_name = 
-      fs::basename(true_roi_it->image_path.leaf())+"_analysis";
+    std::string image_name =
+      fs::basename(true_roi_it->image_path.filename())+"_analysis";
     
-    fs::path image_path = 
+    fs::path image_path =
       program_settings.draw_results_folder /
       std::string(
         image_name +
@@ -328,7 +334,7 @@ void DrawResults(std::vector<ImageRegionList>& true_roi_list,
       );
 
     // write the image
-    imwrite(image_path.native(), img);
+    imwrite(image_path.file_string(), img);
 
     progress_bar.update(progress++);
   }

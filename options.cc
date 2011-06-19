@@ -163,7 +163,7 @@ void LoadSettings(int argc, char *argv[],
   settings.draw_results_folder = fs::path(draw_results_folder);
 }
 
-void OutputSettings( const Settings& settings, std::ostream& out )
+void PrintSettings( const Settings& settings, std::ostream& out )
 {
   out << "# Program Options"      << std::endl
       << "computed_roi_path   = " << settings.computed_roi_path   << std::endl
