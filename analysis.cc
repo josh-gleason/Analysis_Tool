@@ -37,10 +37,10 @@ namespace at = analysis_tools;
 struct IndexScore
 {
   IndexScore() {}
-  IndexScore(int i, double s) : index(i), score(s) {}
+  IndexScore(size_t i, double s) : index(i), score(s) {}
   IndexScore(const IndexScore& a) : index(a.index), score(a.score) {}
   
-  int index;
+  size_t index;
   double score;
 };
 
@@ -83,26 +83,29 @@ void DetermineMatches(
 |     true_roi_list: Ground truth data                                         |
 |     computed_roi_list: Computed Regions of interest                          |
 |     top_match: output from DetermineMatches()                                |
-|     program_settings: settings                                               |
+|     program_settings: settings                   TODO                        |
 |   Output: Write results to output stream determined by program_settings      |
 \******************************************************************************/
 void PrintResults(
   const std::vector<ImageRegionList>&                        true_roi_list,
   const std::vector<ImageRegionList>&                        computed_roi_list,
   const std::vector<std::vector<std::vector<IndexScore> > >& top_matches,
-  const Settings&                                            program_settings
+  const Settings&                                            program_settings,
+  std::vector< std::vector< std::vector<IndexScore> > >&    computed_roi_matches
 );
 
 /**DrawResults*****************************************************************\
 |   Description: Draws both true and computed regions to image                 |
 |   Input:                                                                     |
 |     true/computed_roi_list: true and computed regions of interest            |
-|     program_settings: settings                                               |
+|     program_settings: settings               TODO                            |
 |   Output: Writes all the images to a folder.                                 |
 \******************************************************************************/
 void DrawResults(
-  std::vector<ImageRegionList>& true_roi_list,
-  std::vector<ImageRegionList>& computed_roi_list,
+  const std::vector<ImageRegionList>& true_roi_list,
+  const std::vector<ImageRegionList>& computed_roi_list,
+  const std::vector< std::vector< std::vector<IndexScore> > >&
+                                computed_roi_matches,
   const Settings&               program_settings
 );
 
@@ -130,6 +133,7 @@ int main(int argc, char *argv[])
   // top_matches[image][roi_index] would correspond to the list of top matches
   // of the <roi_index> region of interest in <image>
   std::vector< std::vector< std::vector<IndexScore> > > top_matches;
+  std::vector< std::vector< std::vector<IndexScore> > > computed_roi_matches;
 
   /****************************************************************************\
   |                          INTIALIZE VARIABLES                               |
@@ -148,10 +152,12 @@ int main(int argc, char *argv[])
   DetermineMatches(true_roi_list, computed_roi_list, top_matches);
 
   // print results
-  PrintResults(true_roi_list, computed_roi_list, top_matches, program_settings);
+  PrintResults(true_roi_list, computed_roi_list, top_matches, program_settings,
+               computed_roi_matches);
 
   // draw results on images and save
-  DrawResults(true_roi_list, computed_roi_list, program_settings);
+  DrawResults(true_roi_list, computed_roi_list, computed_roi_matches, 
+              program_settings);
   
   // print settings XXX Remove Me
   PrintSettings(program_settings, std::cout);
@@ -259,7 +265,9 @@ void DetermineMatches(const std::vector<ImageRegionList>& true_roi_list,
 void PrintResults( const std::vector<ImageRegionList>& true_roi_list,
   const std::vector<ImageRegionList>& computed_roi_list,
   const std::vector< std::vector< std::vector<IndexScore> > >& top_matches,
-  const Settings& program_settings )
+  const Settings& program_settings,
+  std::vector< std::vector< std::vector<IndexScore> > >& computed_roi_matches
+)
 {
   // TODO: add return value, struct for holding results
 
@@ -293,11 +301,98 @@ void PrintResults( const std::vector<ImageRegionList>& true_roi_list,
 
 
   // TODO: perhaps this should be sepearated into sub-functions
-  // count false positives
 
-  // calculate truth detection rate
+  // computed_roi_matches will hold the list of true regions that the particular
+  // computed region of interest associates, in the case of SEMI_EXCLUSIVE_2
+  // and EXCLUSIVE, these lists will be restricted to have only one element each
+  computed_roi_matches.resize( top_matches.size() );
 
-  // print results
+  // keep running total number of each of these
+  int false_positives = 0;
+  //int matched_true_positives = 0;
+  //int total_true_positives = 0;
+  
+  // traverse through all images
+  for ( size_t image_index = 0; image_index < top_matches.size();
+        ++image_index )
+  {
+    /**************************************************************************\
+    |                        COUNT FALSE POSITIVES                             |
+    \**************************************************************************/
+
+    // initialize a list of regions with empty lists of matches
+    computed_roi_matches[image_index].resize(
+        computed_roi_list[image_index].regions.size(),
+        vector<IndexScore>(0));
+
+    // search list of matches for each ground truth, add true_region indecies
+    // to the computed_roi_matches list for the particular computed roi.
+    for ( size_t true_roi_index = 0; 
+          true_roi_index < top_matches[image_index].size(); ++true_roi_index )
+    {
+      // number of elements in list to search through
+      size_t match_elements =
+        top_matches[image_index][true_roi_index].size();
+        
+      for ( size_t match_list_index = 0; match_list_index < match_elements;
+            ++match_list_index )
+      {
+        // the computed roi from the list of relevent matches
+        IndexScore match_roi = 
+          top_matches[image_index][true_roi_index][match_list_index];
+        
+        // if the match is above a threshold push it onto the list
+        if ( match_roi.score > program_settings.overlap_threshold )
+        {
+          computed_roi_matches[image_index][match_roi.index].push_back(
+              IndexScore(true_roi_index, match_roi.score));
+        }
+      }
+    }
+    
+    // sort the lists in computed_roi_matches
+    for ( size_t computed_roi_index = 0;
+          computed_roi_index < computed_roi_matches[image_index].size();
+          ++computed_roi_index )
+    {
+      sort(computed_roi_matches[image_index][computed_roi_index].begin(),
+           computed_roi_matches[image_index][computed_roi_index].end(),
+           DescendingSortFunc);
+    }
+
+    // remove repeats to maintain exlusivity
+    if ( program_settings.match_level == Settings::SEMI_EXCLUSIVE_2
+      || program_settings.match_level == Settings::EXCLUSIVE )
+    {
+      // TODO
+    }
+
+    // count computed regions with no matches as false positives
+    for ( size_t computed_roi_index = 0;
+          computed_roi_index < computed_roi_matches[image_index].size();
+          ++computed_roi_index )
+      if ( computed_roi_matches[image_index][computed_roi_index].size() == 0U )
+        false_positives++;
+    
+    /**************************************************************************\
+    |                          COUNT TRUE MATCHES                              |
+    \**************************************************************************/
+    
+    // add to total number of true positives
+//    total_true_positives += top_matches[i].size();
+
+    // look at the top match in the list of matches for each true positive
+    // if the top match is above the threshold it is counted as matched
+//    for ( size_t j = 0; j < top_matches[i].size(); ++j )
+//      if ( top_matches[i][j].size() > 0 )
+//        if ( top_matches[i][j][0].score > program_settings.overlap_threshold )
+//          ++matched_true_positives;
+  }
+
+  // output results TODO: add some output options
+  std::cout << "False Pos: " << false_positives << std::endl
+            << "True Det : " << 0 << std::endl; 
+            //<< (double)matched_true_positives/total_true_positives << std::endl;
 }
 
 double ComputeScore(const cv::Rect& true_roi, const cv::Rect& computed_roi)
@@ -315,9 +410,10 @@ double ComputeScore(const cv::Rect& true_roi, const cv::Rect& computed_roi)
   return at::computeScore(true_roi_at, computed_roi_at);
 }
 
-void DrawResults(std::vector<ImageRegionList>& true_roi_list,
-                 std::vector<ImageRegionList>& computed_roi_list,
-                 const Settings& program_settings)
+void DrawResults(const std::vector<ImageRegionList>& true_roi_list,
+  const std::vector<ImageRegionList>& computed_roi_list,
+  const std::vector< std::vector< std::vector<IndexScore> > >& 
+  computed_roi_matches, const Settings& program_settings)
 {
   if ( !program_settings.draw_results )
     return;
@@ -341,6 +437,15 @@ void DrawResults(std::vector<ImageRegionList>& true_roi_list,
 
   typedef std::vector<cv::Rect>::const_iterator
           ConstRectIterator;
+  
+  typedef std::vector< std::vector< std::vector<IndexScore> > >::const_iterator
+          Vector3DIterator;
+
+  typedef std::vector< std::vector<IndexScore> >::const_iterator
+          Vector2DIterator;
+
+  typedef std::vector<IndexScore>::const_iterator
+          IndexScoreIterator;
 
   ProgressBar progress_bar(
     cout,
@@ -357,8 +462,9 @@ void DrawResults(std::vector<ImageRegionList>& true_roi_list,
   // draw rectangles on each image
   ConstRegionIterator true_roi_it = true_roi_list.begin();
   ConstRegionIterator computed_roi_it = computed_roi_list.begin();
+  Vector3DIterator computed_matches_it = computed_roi_matches.begin();
   for ( ; true_roi_it != true_roi_list.end();
-          ++true_roi_it, ++computed_roi_it )
+          ++true_roi_it, ++computed_roi_it, ++computed_matches_it )
   {
     cv::Mat img = cv::imread(true_roi_it->image_path.file_string());
     
@@ -368,20 +474,56 @@ void DrawResults(std::vector<ImageRegionList>& true_roi_list,
       cv::rectangle(img,
                     *true_regions_it,
                     cv::Scalar(0,255,0),  // color
-                    2,    // thickness
+                    3,    // thickness TODO: add this as an option
                     8,    // line type
                     0);   // shift
 
+    // draw rectangles and matching lines
     ConstRectIterator computed_regions_it = computed_roi_it->regions.begin();
     ConstRectIterator computed_regions_end = computed_roi_it->regions.end();
-    for ( ; computed_regions_it != computed_regions_end; ++computed_regions_it )
+    Vector2DIterator matching_list_it = computed_matches_it->begin();
+    for ( ; computed_regions_it != computed_regions_end;
+          ++computed_regions_it, ++matching_list_it )
+    {
+      // color of the rectangle, false positives are red, matched roi are blue
+      cv::Scalar rect_color;
+
+      if ( matching_list_it->size() == 0U )
+        rect_color = cv::Scalar(0,0,255);
+      else
+        rect_color = cv::Scalar(255,255,0);
+
       cv::rectangle(img,
-                    *computed_regions_it,
-                    cv::Scalar(0,0,255),
-                    2,
+                   *computed_regions_it,
+                    rect_color,
+                    3,
                     8,
                     0);
-  
+
+      // draw lines to matching regions
+      for ( IndexScoreIterator match_roi_it = matching_list_it->begin();
+            match_roi_it != matching_list_it->end(); ++match_roi_it )
+      {
+        // the two rectangles to draw a line between
+        const cv::Rect true_roi = true_roi_it->regions[match_roi_it->index];
+        const cv::Rect comp_roi = *computed_regions_it;
+
+        const cv::Point true_center(true_roi.x + true_roi.width/2,
+                              true_roi.y + true_roi.height/2);
+        const cv::Point comp_center(comp_roi.x + comp_roi.width/2,
+                              comp_roi.y + comp_roi.height/2);
+
+        cv::line(
+          img,
+          true_center,
+          comp_center,
+          cv::Scalar(255,0,0),
+          3,
+          8,
+          0);
+      }
+    } 
+
     // build image path as ...
     // DRAW_RESULTS_FOLDER/ORIGINAL_BASENAME_analysis.ORIGINAL_EXTENSION
     std::string image_name =

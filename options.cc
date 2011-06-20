@@ -95,9 +95,9 @@ void LoadSettings(int argc, char *argv[],
         (reinterpret_cast<int*>(&settings.match_level))->
           default_value(static_cast<int>(Settings::NON_EXCLUSIVE)),
         "Level of matching (--help_match_level for more information)")
-    ("score_1_threshold,t1", po::value<double>
-        (&settings.score_1_threshold)->default_value(0.0),
-        "First score threshold value")
+    ("overlap_threshold,ot", po::value<double>
+        (&settings.overlap_threshold)->default_value(0.0),
+        "Minimum overlap score")
     ("draw_results,D", po::value<bool>
         (&settings.draw_results)->default_value(false),
         "Option to draw results and save images")
@@ -215,7 +215,7 @@ void PrintSettings( const Settings& settings, std::ostream& out )
       << "output_results_path = " << settings.output_results_path << std::endl
       << "draw_results_folder = " << settings.draw_results_folder << std::endl
       << "draw_results        = " << settings.draw_results        << std::endl
-      << "score_1_threshold   = " << settings.score_1_threshold   << std::endl
+      << "overlap_threshold   = " << settings.overlap_threshold   << std::endl
       << "match_level         = " << static_cast<int>(settings.match_level) <<
         (settings.match_level == s::NON_EXCLUSIVE    ?"\t\t# NON_EXCLUSIVE"   :
         (settings.match_level == s::SEMI_EXCLUSIVE_1 ?"\t\t# SEMI_EXCLUSIVE_1":

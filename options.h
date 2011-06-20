@@ -21,8 +21,7 @@ struct Settings
   boost::filesystem::path output_results_path;
   boost::filesystem::path draw_results_folder;
   bool draw_results;
-  double score_1_threshold;
-
+  double overlap_threshold;
   MatchType match_level;
 };
 
