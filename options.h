@@ -7,6 +7,9 @@
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 
+#define BOOST_FILESYSTEM_VERSION 3
+#define BOOST_FILESYSTEM_NO_DEPRECATED
+
 struct Settings
 {
   typedef enum {

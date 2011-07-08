@@ -1,6 +1,6 @@
-/home/jdgleaso/Projects/image_info_ptd/MayJun2010/IMG_0015.jpg 6 : vehicle 3546 610 248 506 : vehicle 3921 515 79 151 : vehicle 3837 511 107 172 : vehicle 3716 202 170 293 : vehicle 3635 123 75 150 : vehicle 1899 1394 49 79
-/home/jdgleaso/Projects/image_info_ptd/MayJun2010/IMG_0016.jpg 0 : background 0 0 0 0
-/home/jdgleaso/Projects/image_info_ptd/MayJun2010/IMG_0017.jpg 0 : background 0 0 0 0
-/home/jdgleaso/Projects/image_info_ptd/MayJun2010/IMG_0018.jpg 1 : vehicle 1880 885 32 32
-/home/jdgleaso/Projects/image_info_ptd/MayJun2010/IMG_0019.jpg 8 : vehicle 808 777 80 67 : vehicle 2219 1540 113 80 : vehicle 3720 555 82 64 : vehicle 3626 490 142 101 : vehicle 3433 591 137 89 : vehicle 2170 1048 77 50 : vehicle 2263 921 80 129 : vehicle 860 258 124 75
-/home/jdgleaso/Projects/image_info_ptd/MayJun2010/IMG_0020.jpg 0 : background 0 0 0 0
+/home/josh/Desktop/image_info_ptd/MayJun2010/IMG_0015.jpg 6 : vehicle 3546 610 248 506 : vehicle 3921 515 79 151 : vehicle 3837 511 107 172 : vehicle 3716 202 170 293 : vehicle 3635 123 75 150 : vehicle 1899 1394 49 79
+/home/josh/Desktop/image_info_ptd/MayJun2010/IMG_0016.jpg 0 : background 0 0 0 0
+/home/josh/Desktop/image_info_ptd/MayJun2010/IMG_0017.jpg 0 : background 0 0 0 0
+/home/josh/Desktop/image_info_ptd/MayJun2010/IMG_0018.jpg 1 : vehicle 1880 885 32 32
+/home/josh/Desktop/image_info_ptd/MayJun2010/IMG_0019.jpg 8 : vehicle 808 777 80 67 : vehicle 2219 1540 113 80 : vehicle 3720 555 82 64 : vehicle 3626 490 142 101 : vehicle 3433 591 137 89 : vehicle 2170 1048 77 50 : vehicle 2263 921 80 129 : vehicle 860 258 124 75
+/home/josh/Desktop/image_info_ptd/MayJun2010/IMG_0020.jpg 0 : background 0 0 0 0

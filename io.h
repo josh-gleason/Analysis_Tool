@@ -7,6 +7,9 @@
 #include <boost/filesystem.hpp>
 #include "image_region_list.h"
 
+#define BOOST_FILESYSTEM_VERSION 3
+#define BOOST_FILESYSTEM_NO_DEPRECATED
+
 /**LoadComputedROI*************************************************************\
 |   Description: Load the computed regions of interest(ROIs) in a file         |
 |   Input:                                                                     |
