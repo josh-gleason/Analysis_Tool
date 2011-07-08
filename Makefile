@@ -1,7 +1,8 @@
 # this runs first
 all:
 
-compile_options = -O2 -Wall
+compile_options = -g
+#-O2 -Wall
 
 flags = `pkg-config opencv --cflags`
 libs = -lboost_system -lboost_filesystem -lboost_program_options `pkg-config opencv --libs`

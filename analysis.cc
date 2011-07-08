@@ -309,8 +309,9 @@ void PrintResults( const std::vector<ImageRegionList>& true_roi_list,
 
   // keep running total number of each of these
   int false_positives = 0;
-  //int matched_true_positives = 0;
-  //int total_true_positives = 0;
+  int false_negatives = 0;
+  int true_positives = 0;
+  int total_truth = 0;
   
   // traverse through all images
   for ( size_t image_index = 0; image_index < top_matches.size();
@@ -379,20 +380,24 @@ void PrintResults( const std::vector<ImageRegionList>& true_roi_list,
     \**************************************************************************/
     
     // add to total number of true positives
-//    total_true_positives += top_matches[i].size();
+    total_truth += true_roi_list[image_index].regions.size();
 
     // look at the top match in the list of matches for each true positive
     // if the top match is above the threshold it is counted as matched
-//    for ( size_t j = 0; j < top_matches[i].size(); ++j )
-//      if ( top_matches[i][j].size() > 0 )
-//        if ( top_matches[i][j][0].score > program_settings.overlap_threshold )
-//          ++matched_true_positives;
+    for ( size_t top_roi_index = 0;
+          top_roi_index < top_matches[image_index].size(); ++top_roi_index )
+      if ( top_matches[image_index][top_roi_index].size() > 0 )
+        if ( top_matches[image_index][top_roi_index][0].score 
+           > program_settings.overlap_threshold )
+          ++true_positives;
   }
 
   // output results TODO: add some output options
-  std::cout << "False Pos: " << false_positives << std::endl
-            << "True Det : " << 0 << std::endl; 
-            //<< (double)matched_true_positives/total_true_positives << std::endl;
+  std::cout << "False Positives: " << false_positives << std::endl
+            << "False Negatives: " << total_truth - true_positives << std::endl
+            << "True Positives : " << true_positives << std::endl
+            << "True Det Rate  : " << 100 * (double)true_positives/total_truth
+              << "%" << std::endl;
 }
 
 double ComputeScore(const cv::Rect& true_roi, const cv::Rect& computed_roi)
