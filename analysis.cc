@@ -365,7 +365,7 @@ void PrintResults( const std::vector<ImageRegionList>& true_roi_list,
     if ( program_settings.match_level == Settings::SEMI_EXCLUSIVE_2
       || program_settings.match_level == Settings::EXCLUSIVE )
     {
-      vector<vector<IndexScore> > true_matches
+      // TODO
     }
 
     // count computed regions with no matches as false positives
@@ -426,7 +426,8 @@ void DrawResults(const std::vector<ImageRegionList>& true_roi_list,
   // if output folder does not exist, create it
   if ( !fs::exists(program_settings.draw_results_folder) )
   {
-    std::cout << "Creating directory" << std::endl;
+    std::cout << "Creating Folder " << program_settings.draw_results_folder
+              << std::endl;
     if ( !fs::create_directories(program_settings.draw_results_folder) )
     {
       std::cout << "Could not create folder "
@@ -471,7 +472,7 @@ void DrawResults(const std::vector<ImageRegionList>& true_roi_list,
   for ( ; true_roi_it != true_roi_list.end();
           ++true_roi_it, ++computed_roi_it, ++computed_matches_it )
   {
-    cv::Mat img = cv::imread(true_roi_it->image_path.native());
+    cv::Mat img = cv::imread(true_roi_it->image_path.string());
     
     ConstRectIterator true_regions_it = true_roi_it->regions.begin();
     ConstRectIterator true_regions_end = true_roi_it->regions.end();
@@ -542,7 +543,7 @@ void DrawResults(const std::vector<ImageRegionList>& true_roi_list,
       );
 
     // write the image
-    imwrite(image_path.native(), img);
+    imwrite(image_path.string(), img);
 
     progress_bar.update(progress++);
   }

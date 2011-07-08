@@ -7,7 +7,7 @@ bool LoadComputedROI( const fs::path& file_path,
   std::vector<ImageRegionList>& computed_regions )
 {
   // open file
-  std::ifstream fin(file_path.native().c_str());
+  std::ifstream fin(file_path.string().c_str());
   
   std::string line;
 
@@ -77,7 +77,7 @@ bool LoadTrueROI( const fs::path& file_path,
   std::vector<ImageRegionList>& true_regions )
 {
   // open file
-  std::ifstream fin(file_path.native().c_str());
+  std::ifstream fin(file_path.string().c_str());
   
   std::string line;
 
