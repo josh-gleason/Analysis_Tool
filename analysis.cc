@@ -144,7 +144,8 @@ int main(int argc, char *argv[])
 
   // loads the files into vectors of ImageRegionList objects
   LoadTrueROI(program_settings.true_roi_path, true_roi_list);
-  LoadComputedROI(program_settings.computed_roi_path, computed_roi_list);
+  LoadComputedROI(program_settings.computed_roi_path,
+                  program_settings.score_threshold, computed_roi_list);
   
   /****************************************************************************\
   |                              RUN PROGRAM                                   |
@@ -249,10 +250,8 @@ void DetermineMatches(const std::vector<ImageRegionList>& true_roi_list,
           static double score;
           score = ComputeScore(*true_regions_it, *computed_regions_it);
 
-          // TODO: Decide if this should be done later so this function only
-          //       needs to be run once
-          // only save if score is above a threshold
-          if ( *computed_scores_it > score_threshold && score > 0 )
+          // only save if score is above zero (which is always should be)
+          if ( score > 0 )
             top_regions_it->push_back(IndexScore(index, score));
         }
       }

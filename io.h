@@ -14,11 +14,13 @@
 |   Description: Load the computed regions of interest(ROIs) in a file         |
 |   Input:                                                                     |
 |     filename: Path to the file containined the computed ROIs                 |
+|     score_threshold: minimum score to accept                                 |
 |   Output:                                                                    |
 |     computed_regions: List of computed regions                               |
 \******************************************************************************/
 bool LoadComputedROI( 
   const boost::filesystem::path&  filename,
+  double score_threshold,
   std::vector<ImageRegionList>&   computed_regions 
 );
 

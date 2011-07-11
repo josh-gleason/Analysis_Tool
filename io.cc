@@ -3,7 +3,7 @@
 
 namespace fs = boost::filesystem;
 
-bool LoadComputedROI( const fs::path& file_path,
+bool LoadComputedROI( const fs::path& file_path, double score_threshold,
   std::vector<ImageRegionList>& computed_regions )
 {
   // open file
@@ -37,9 +37,10 @@ bool LoadComputedROI( const fs::path& file_path,
       computed_regions.push_back(ImageRegionList());
 
       // initialize arrays in the ImageRegionList
-      computed_regions[index].regions.resize(region_count);
-      computed_regions[index].labels.resize(region_count);
-      computed_regions[index].scores.resize(region_count);
+      // XXX: not static anymore because accepting only regions above thresh
+      // computed_regions[index].regions.resize(region_count);
+      // computed_regions[index].labels.resize(region_count);
+      // computed_regions[index].scores.resize(region_count);
 
       // implicit convertion from string to fs::path
       computed_regions[index].image_path = image_path;
@@ -48,18 +49,46 @@ bool LoadComputedROI( const fs::path& file_path,
       cv::Point upper_left, lower_right;
       for ( size_t i = 0; i < region_count; ++i )
       {
-        sin >> garbage >> computed_regions[index].labels[i]
-            >> computed_regions[index].scores[i]
+
+// HACKED SHOULDNT BE USED ///        
+        string label;
+        double score;
+
+        sin >> garbage >> label >> score 
             >> upper_left.x  >> upper_left.y
             >> lower_right.x >> lower_right.y;
-        
+
+        // only read if score greater than threshold
+        if ( score > score_threshold )
+        {
+          computed_regions[index].labels.push_back(label);
+          computed_regions[index].scores.push_back(score);
+
+          cv::Rect roi;
+          roi.x = upper_left.x;
+          roi.y = upper_left.y;
+          roi.width = lower_right.x - upper_left.x;
+          roi.height = lower_right.y - upper_left.y;
+
+          computed_regions[index].regions.push_back(roi);
+        }
+
+/////////////////////////////////
+
+// TODO: Use this again and update the program to be more rhobust
+// This is stuff that should be used, but hacked together a score_threhold
+//        sin >> garbage >> computed_regions[index].labels[i]
+//            >> computed_regions[index].scores[i]
+//            >> upper_left.x  >> upper_left.y
+//            >> lower_right.x >> lower_right.y;
+//
         // store rectangles in arrays
-        computed_regions[index].regions[i].x = upper_left.x;
-        computed_regions[index].regions[i].y = upper_left.y;
-        computed_regions[index].regions[i].width =
-            lower_right.x - upper_left.x;
-        computed_regions[index].regions[i].height =
-            lower_right.y - upper_left.y;
+//        computed_regions[index].regions[i].x = upper_left.x;
+//        computed_regions[index].regions[i].y = upper_left.y;
+//        computed_regions[index].regions[i].width =
+//            lower_right.x - upper_left.x;
+//        computed_regions[index].regions[i].height =
+//            lower_right.y - upper_left.y;
       }
 
       ++index;
