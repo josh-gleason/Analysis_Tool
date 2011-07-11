@@ -68,12 +68,14 @@ double ComputeScore(
 |   Input:                                                                     |
 |     true_roi_list: Ground truth data                                         |
 |     computed_roi_list: Computed Regions to compare to                        |
+|     score_threshold: Minumum allowed score                                   |
 |   Output:                                                                    |
 |     top_match: lists of top matches for each ROI in true_roi_list            |
 \******************************************************************************/
 void DetermineMatches(
   const std::vector<ImageRegionList>&                     true_roi_list,
   const std::vector<ImageRegionList>&                     computed_roi_list,
+  double                                                  score_threshold,
   std::vector< std::vector< std::vector<IndexScore> > >&  top_matches
 );
 
@@ -149,7 +151,8 @@ int main(int argc, char *argv[])
   \****************************************************************************/
 
   // build list of top matching computed regions for each roi in ground truth
-  DetermineMatches(true_roi_list, computed_roi_list, top_matches);
+  DetermineMatches(true_roi_list, computed_roi_list,
+                   program_settings.score_threshold, top_matches);
 
   // print results
   PrintResults(true_roi_list, computed_roi_list, top_matches, program_settings,
@@ -160,7 +163,7 @@ int main(int argc, char *argv[])
               program_settings);
   
   // print settings XXX Remove Me
-  PrintSettings(program_settings, std::cout);
+//  PrintSettings(program_settings, std::cout);
 
   return 0;
 }
@@ -170,7 +173,8 @@ int main(int argc, char *argv[])
 \******************************************************************************/
 void DetermineMatches(const std::vector<ImageRegionList>& true_roi_list,
   const std::vector<ImageRegionList>& computed_roi_list,
-  std::vector< std::vector< std::vector<IndexScore> > >& top_matches)
+  double score_threshold, 
+  std::vector< std::vector< std::vector<IndexScore> > >& top_matches )
 {
   // iterator typedefs
   typedef std::vector<ImageRegionList>::const_iterator
@@ -184,6 +188,9 @@ void DetermineMatches(const std::vector<ImageRegionList>& true_roi_list,
 
   typedef std::vector<cv::Rect>::const_iterator
           ConstRectIterator;
+      
+  typedef std::vector<float>::const_iterator
+          ConstScoreIterator;
 
   // test for valid inputs
   {
@@ -224,7 +231,7 @@ void DetermineMatches(const std::vector<ImageRegionList>& true_roi_list,
       ConstRectIterator true_regions_it = true_roi_it->regions.begin();
       ConstRectIterator true_regions_end = true_roi_it->regions.end();
       Vector2DIterator top_regions_it = top_matches_it->begin();
-      Vector2DIterator top_regions_end = top_matches_it->end();
+//      Vector2DIterator top_regions_end = top_matches_it->end();
       for ( ; true_regions_it != true_regions_end;
               ++true_regions_it, ++top_regions_it )
       {
@@ -233,13 +240,19 @@ void DetermineMatches(const std::vector<ImageRegionList>& true_roi_list,
           computed_roi_it->regions.begin();
         ConstRectIterator computed_regions_end =
           computed_roi_it->regions.end();
+        ConstScoreIterator computed_scores_it =
+          computed_roi_it->scores.begin();
         int index = 0;
         for ( ; computed_regions_it != computed_regions_end;
-                ++computed_regions_it, ++index )
+                ++computed_regions_it, ++computed_scores_it, ++index )
         {
           static double score;
           score = ComputeScore(*true_regions_it, *computed_regions_it);
-          if ( score > 0 )  // only save if score is greater than zero
+
+          // TODO: Decide if this should be done later so this function only
+          //       needs to be run once
+          // only save if score is above a threshold
+          if ( *computed_scores_it > score_threshold && score > 0 )
             top_regions_it->push_back(IndexScore(index, score));
         }
       }
@@ -266,8 +279,7 @@ void PrintResults( const std::vector<ImageRegionList>& true_roi_list,
   const std::vector<ImageRegionList>& computed_roi_list,
   const std::vector< std::vector< std::vector<IndexScore> > >& top_matches,
   const Settings& program_settings,
-  std::vector< std::vector< std::vector<IndexScore> > >& computed_roi_matches
-)
+  std::vector< std::vector< std::vector<IndexScore> > >& computed_roi_matches )
 {
   // TODO: add return value, struct for holding results
 
@@ -395,9 +407,9 @@ void PrintResults( const std::vector<ImageRegionList>& true_roi_list,
   // output results TODO: add some output options
   std::cout << "False Positives: " << false_positives << std::endl
             << "False Negatives: " << total_truth - true_positives << std::endl
-            << "True Positives : " << true_positives << std::endl
-            << "True Det Rate  : " << 100 * (double)true_positives/total_truth
-              << "%" << std::endl;
+            << "True Positives : " << true_positives << std::endl;
+//            << "True Det Rate  : " << 100 * (double)true_positives/total_truth
+//              << "%" << std::endl
 }
 
 double ComputeScore(const cv::Rect& true_roi, const cv::Rect& computed_roi)

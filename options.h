@@ -10,6 +10,11 @@
 #define BOOST_FILESYSTEM_VERSION 3
 #define BOOST_FILESYSTEM_NO_DEPRECATED
 
+struct Range
+{
+  double start, step, end;
+};
+
 struct Settings
 {
   typedef enum {
@@ -26,7 +31,12 @@ struct Settings
   bool draw_results;
   double overlap_threshold;
   MatchType match_level;
+//  bool calculate_score_range;
+//  Range score_range;
+  double score_threshold; // XXX: Temporary
 };
+
+std::istream& operator>> ( std::istream &in, Range& range );
 
 /**LoadSettings****************************************************************\
 |    Description: Load the settings from the settings file.  The settings file |

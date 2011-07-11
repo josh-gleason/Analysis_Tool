@@ -7,6 +7,8 @@ compile_options = -g
 flags = `pkg-config opencv --cflags`
 libs = -lboost_system -lboost_filesystem -lboost_program_options `pkg-config opencv --libs`
 
+compiler = colorgcc
+
 ############# Declare program components ################
 
 object_files = \
@@ -31,11 +33,11 @@ exec_files = \
 
 # redefine implicit rules for building object files
 %.o: %.cc Makefile
-	g++ -c $(compile_options) $(flags) $< -o $@
+	$(compiler) -c $(compile_options) $(flags) $< -o $@
 
 # build the main program
 analysis: analysis.cc $(object_files) $(header_files)
-	g++ $(compile_options) $(libs) $(flags) $(object_files) -o $@ $<
+	$(compiler) $(compile_options) $(libs) $(flags) $(object_files) -o $@ $<
 
 ############# Other Opperations ##########################
 .PHONY: clean all

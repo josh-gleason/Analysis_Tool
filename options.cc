@@ -101,6 +101,16 @@ void LoadSettings(int argc, char *argv[],
     ("draw_results,D", po::value<bool>
         (&settings.draw_results)->default_value(false),
         "Option to draw results and save images")
+//    ("calculate_score_range", po::value<bool>
+//        (&settings.calculate_score_range)->default_value(false),
+//        "Causes associated score value to be used")
+//    ("score_range", po::value<Range>
+//        (&settings.score_range)->multitoken(),
+//        "Range of scores to test")
+    // XXX: Temporary
+    ("score_threshold,S", po::value<double>
+        (&settings.score_threshold)->default_value(0.0),
+        "Minimum allowed score threshold")
   ;
 
   // add all to file descriptions
@@ -223,5 +233,12 @@ void PrintSettings( const Settings& settings, std::ostream& out )
         (settings.match_level == s::EXCLUSIVE        ?"\t\t# EXCLUSIVE "      :
         "" )))) << std::endl
   ;
+}
+
+// overloaded extraction operator
+std::istream& operator>> ( std::istream &in, Range& range )
+{
+  in >> range.start >> range.step >> range.end;
+  return in;
 }
 
